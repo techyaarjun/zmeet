@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"simple-sfu/pkg/config"
 )
 
 var upgrader = websocket.Upgrader{
@@ -35,14 +36,23 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("socket connected.")
-	defer func() {
-		_ = conn.Close()
-	}()
+	fmt.Printf("participant joined... roomID : %v, name : %v\n", roomID, name)
 
 	existingRoom := s.GetRoom(roomID)
+	count := existingRoom.ParticipantCount()
+	if count >= config.MaxParticipants {
+		fmt.Println("room limit exceeded, max participants reached")
+		return
+	}
+
 	newParticipant := NewParticipant(roomID, name, conn)
 	existingRoom.Join(newParticipant)
 	newParticipant.SocketConnected(true)
+
+	defer func() {
+		fmt.Println("socket disconnected.")
+		existingRoom.Close(newParticipant)
+	}()
 
 	for {
 		_, p, err := conn.ReadMessage()
@@ -57,7 +67,6 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		//fmt.Println("message received type: ", message.Type)
 		go message.process(existingRoom, newParticipant)
 	}
 }
@@ -65,7 +74,7 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 func (m *Message) process(r *Room, p *Participant) {
 	switch m.Type {
 	case "device-ready":
-		p.Init()
+		p.Init(r)
 	case "answer":
 		p.PeerAnswer(m)
 	}

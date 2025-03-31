@@ -19,16 +19,18 @@ var (
 )
 
 type Participant struct {
-	mu               sync.RWMutex
-	id               string
-	roomID           string
-	name             string
-	socketConnection *websocket.Conn
-	peerConnection   *webrtc.PeerConnection
-	State            State
-	peerConnected    bool
-	iceConnected     bool
-	socketConnected  bool
+	mu                 sync.RWMutex
+	id                 string
+	roomID             string
+	name               string
+	socketConnection   *websocket.Conn
+	peerConnection     *webrtc.PeerConnection
+	videoOutBoundTrack *webrtc.TrackLocalStaticRTP
+	audioOutBoundTrack *webrtc.TrackLocalStaticRTP
+	State              State
+	peerConnected      bool
+	iceConnected       bool
+	socketConnected    bool
 }
 
 func NewParticipant(roomID, name string, conn *websocket.Conn) *Participant {
@@ -44,12 +46,15 @@ func NewParticipant(roomID, name string, conn *websocket.Conn) *Participant {
 	}
 }
 
-func (p *Participant) Init() {
+func (p *Participant) Init(r *Room) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.peerConnection = NewPeerConnection()
+	p.peerConnection, p.videoOutBoundTrack, p.audioOutBoundTrack = NewPeerConnection()
 	p.State = READY
+
+	go MonitorTrack(p.peerConnection, p, r)
+	go MonitorState(p.peerConnection, p, r)
 
 	gatherComplete := webrtc.GatheringCompletePromise(p.peerConnection)
 
@@ -95,6 +100,18 @@ func (p *Participant) IsSocketConnected() bool {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return p.socketConnected
+}
+
+func (p *Participant) ID() string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.id
+}
+
+func (p *Participant) Name() string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.name
 }
 
 func (p *Participant) PeerAnswer(data *Message) {
