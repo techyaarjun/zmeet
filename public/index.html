@@ -27,6 +27,13 @@
             padding: 20px;
             text-align: center;
 
+            a {
+                display: inline;
+                visibility: visible;
+                color: #6a0dad;
+                text-decoration: underline;
+            }
+
             h1 {
                 color: #6a0dad;
                 font-weight: 600;
@@ -91,6 +98,14 @@
             button:active {
                 transform: scale(0.98);
             }
+
+            .note {
+                color: #ad0d38;
+                text-align: center;
+                margin-top: 20px;
+                font-weight: 200;
+                letter-spacing: 1px;
+            }
         }
 
         .meeting-container {
@@ -105,6 +120,13 @@
                 justify-content: space-between;
                 align-items: center;
                 margin-bottom: 20px;
+            }
+
+            a {
+                display: inline;
+                visibility: visible;
+                color: #6a0dad;
+                text-decoration: underline;
             }
 
             .room-info {
@@ -261,7 +283,8 @@
 </head>
 <body>
 <div class="login-container" id="login-container">
-    <h1>ZMeet</h1>
+    <h1>ChayaMeet</h1>
+<!--    <p>Chaya (ചായ) means tea + Meet (for casual tea-time talks)</p>-->
     <form id="joinForm">
         <div class="form-group">
             <label for="roomID">Room ID</label>
@@ -273,12 +296,15 @@
         </div>
         <button type="submit">Join</button>
     </form>
-    <p>Note: This is for learning purpose code available on github</p>
+    <p class="note">
+        <strong>Note:</strong> This is for learning purposes. Code available on GitHub:
+        <a href="https://github.com/techyaarjun/chayameet" target="_blank" rel="noopener noreferrer">Click here</a>
+    </p>
 </div>
 <div class="meeting-container" id="meeting-container">
     <div class="header">
         <div class="room-info">
-            <h1>ZMeet</h1>
+            <h1>ChayaMeet</h1>
             <div class="room-id" id="room-id">Room: ABC123</div>
         </div>
     </div>
@@ -307,7 +333,11 @@
         </button>
     </div>
 
-    <p class="note">Note: This is for learning purpose code available on github</p>
+    <p class="note">
+        <strong>Note:</strong> This is for learning purposes. Code available on GitHub:
+        <a href="https://github.com/techyaarjun/chayameet" target="_blank" rel="noopener noreferrer">Click here</a>
+    </p>
+
 </div>
 
 <script src="index.js"></script>
