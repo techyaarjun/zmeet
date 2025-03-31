@@ -30,6 +30,18 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(s.rooms) > config.MaxRooms {
+		fmt.Println("max rooms reached")
+		return
+	}
+
+	existingRoom := s.GetRoom(roomID)
+	count := existingRoom.ParticipantCount()
+	if count >= config.MaxParticipants {
+		fmt.Println("max participants reached per/room")
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err.Error())
@@ -37,13 +49,6 @@ func (s *Server) connect(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("socket connected.")
 	fmt.Printf("participant joined... roomID : %v, name : %v\n", roomID, name)
-
-	existingRoom := s.GetRoom(roomID)
-	count := existingRoom.ParticipantCount()
-	if count >= config.MaxParticipants {
-		fmt.Println("room limit exceeded, max participants reached")
-		return
-	}
 
 	newParticipant := NewParticipant(roomID, name, conn)
 	existingRoom.Join(newParticipant)
